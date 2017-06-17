@@ -12,6 +12,7 @@ Under fedora, do
     sudo dnf install python3-vlc vlc-devel ncurses-libs ncurses-devel
 
 ## Usage
+    ./micpyplayer.py <directory_path>
 use the arrows to move up and down, right-arrow is for enter.
 
 ## Screenshots
