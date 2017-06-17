@@ -1,5 +1,5 @@
 # micpyplayer
-Simple music player in python with ncurses and libvlc
+Simple music player in python with ncurses and libvlc. This project is still in early stages.
 
 ## Installation 
 
