@@ -52,13 +52,13 @@ class Player():
         self.vlc_player = self.instance.media_player_new()
         self.logger = logger
         self.logger.debug("PlayerClass instanced")
-        self.current_track = None
         self.state = "||"
+        self.current_track = None
 
     def play(self, file_path):
         fullpath = file_path.resolve()
         if self.current_track is not None and \
-           self.current_track.fullpath == fullpath:
+           self.current_track.fullpath == str(fullpath):
             if self.state == ">":
                 self.logger.debug("PlayerClass:  set to pause")
                 self.state = "||"
@@ -71,5 +71,6 @@ class Player():
             self.logger.debug("PlayerClass:  playing new track")
             self.state = ">"
             self.current_track = Track(self.logger, self.instance,  fullpath)
+
             self.vlc_player.set_media(self.current_track.media)
             self.vlc_player.play()
