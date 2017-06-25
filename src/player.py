@@ -38,6 +38,9 @@ class Track():
 
 class Player():
 
+    def song_finished(self, event):
+        self.logger.debug("song finished!")
+
     def get_interface_lines(self):
         print_file = ""
         if self.current_track:
@@ -50,6 +53,9 @@ class Player():
     def __init__(self, logger):
         self.instance = vlc.Instance()
         self.vlc_player = self.instance.media_player_new()
+        self.events = self.vlc_player.event_manager()
+        self.events.event_attach(
+            vlc.EventType.MediaPlayerEndReached, self.song_finished)
         self.logger = logger
         self.logger.debug("PlayerClass instanced")
         self.state = "||"
