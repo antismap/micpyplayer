@@ -7,9 +7,20 @@ You need to install ncurses and libvlc.
 
 ### Fedora 
 
-Under fedora, do
+Under Fedora, do
 
-    sudo dnf install python3-vlc vlc-devel ncurses-libs ncurses-devel
+    sudo dnf install vlc python3-vlc vlc-devel ncurses-libs ncurses-devel
+
+### Ubuntu
+
+Unter Ubuntu:
+
+    sudo apt-get install libvlc-dev vlc
+
+and the bindings with pip 
+
+    pip3 install python-vlc
+
 
 ## Usage
     ./micpyplayer.py <directory_path>
