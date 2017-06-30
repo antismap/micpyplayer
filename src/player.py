@@ -1,14 +1,14 @@
 import vlc
 
 
-class Track():
+class Track(object):
 
     def __init__(self, logger, instance, mediapath):
         self.path = mediapath
         self.fullpath = str(mediapath.resolve())
         self.instance = instance
         self.logger = logger
-        self.logger.debug("self.fullpath: " + self.fullpath)
+        self.logger.debug("self.fullpath: %s", self.fullpath)
 
         self.media = self.instance.media_new(self.fullpath)
         self.has_id3 = self.parse_new_track(self.media)
@@ -16,27 +16,24 @@ class Track():
     def parse_new_track(self, media):
         media.parse()
         self.artist = media.get_meta(vlc.Meta.Artist)
-        self.album = media.get_meta(vlc.Meta.Album)
+        self.album = media.get_meta(vlc.Meta.Album) or "Unknown Album"
         self.title = media.get_meta(vlc.Meta.Title)
-        self.track_nb = media.get_meta(vlc.Meta.TrackNumber)
+        # Display a little symbol instead of the track number if it's unknown
+        self.track_nb = media.get_meta(vlc.Meta.TrackNumber) or "*"
 
-        if self.artist is None or self.album is None or self.title is None \
-           or self.track_nb is None:
-            return False
-        else:
-            return True
+        # Display track info if we have at least an artist and a title,
+        # else display the file name
+        return self.artist and self.title
 
     def get_track_info_line(self):
-        if self.has_id3 is False:
-            return self.fullpath
+        if self.has_id3:
+            return "{s.track_nb} - {s.artist} - {s.title} ({s.album})"\
+                   .format(s=self)
         else:
-            return self.track_nb + " - " + \
-                self.artist + " - " + \
-                self.title + " (" + \
-                self.album + ")"
+            return self.fullpath
 
 
-class Player():
+class Player(object):
 
     def song_finished(self, event):
         self.logger.debug("song finished!")
@@ -76,7 +73,7 @@ class Player():
         else:
             self.logger.debug("PlayerClass:  playing new track")
             self.state = ">"
-            self.current_track = Track(self.logger, self.instance,  fullpath)
+            self.current_track = Track(self.logger, self.instance, fullpath)
 
             self.vlc_player.set_media(self.current_track.media)
             self.vlc_player.play()
