@@ -1,13 +1,18 @@
 #!/usr/bin/env python3
+
 import curses
 import os
-from pathlib import Path
 import sys
 import logging
+
+from pathlib import Path
 import player
 
 
 def main(stdscr):
+
+    known_extensions = '.mp3', '.wav', '.aac', '.aif', '.ogg', '.wma'
+
     arg_path = ""
     if len(sys.argv) < 2:
         arg_path = os.getcwd()
@@ -57,7 +62,10 @@ def main(stdscr):
         stdscr.addstr(0, int(max_x / 2) - int(((len(arg_path_print) + 2) / 2)),
                       "|" + arg_path_print + "|")
 
-        current_list_dir = os.listdir(str(curdir_path))
+        current_list_dir = [s for s in os.listdir(str(curdir_path))
+                            if s.endswith(known_extensions) or
+                            os.path.isdir(str(curdir_path) + "/" + s)]
+
         current_list_dir.insert(0, "..")
 
         for line, f in enumerate(current_list_dir[offset_filelist:coord_max_y
