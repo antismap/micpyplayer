@@ -63,8 +63,9 @@ def main(stdscr):
                       "|" + arg_path_print + "|")
 
         current_list_dir = [s for s in os.listdir(str(curdir_path))
-                            if s.endswith(known_extensions) or
-                            os.path.isdir(str(curdir_path) + "/" + s)]
+                            if (s.endswith(known_extensions) or
+                                os.path.isdir(str(curdir_path) + "/" + s))
+                            and not s.startswith(".")]
 
         current_list_dir.insert(0, "..")
 
