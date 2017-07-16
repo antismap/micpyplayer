@@ -32,19 +32,25 @@ class Track(object):
         else:
             return self.fullpath
 
+#    def get_current_time(self):
+
 
 class Player(object):
+    #  libvlc_media_player_get_position
+    # vlm_get_media_instance_time(self, psz_name, i_instance):
 
     def song_finished(self, event):
         self.logger.debug("song finished!")
 
     def get_interface_lines(self):
         print_file = ""
+        #current_time = ""
         if self.current_track:
             print_file = self.current_track.get_track_info_line()
+            #current_time = self.current_track.get_current_time()
 
         line_1 = " " + self.state + " " + print_file
-        line_2 = ""
+        line_2 = "current %: " + str(self.vlc_player.get_position())
         return line_1, line_2
 
     def __init__(self, logger):
