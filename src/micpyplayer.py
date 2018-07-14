@@ -55,30 +55,60 @@ def main(stdscr):
     max_y, max_x = stdscr.getmaxyx()
     our_player = player.Player(logger)
     thread_started = False
+    refresher = ScreenRefresher(
+        stdscr, max_y, max_x, our_player, known_extensions)
+
     while 1:
+        refresher.refresh()
+
+        if not thread_started:
+            t1 = threading.Thread(target=get_input, args=(
+                our_player, stdscr, refresher))
+            t1.start()
+            logger.debug("thread started")
+            thread_started = True
+
+        time.sleep(1)
+
+
+class ScreenRefresher(object):
+    def __init__(self, stdscr, max_y, max_x, our_player, known_extensions):
+        self.stdscr = stdscr
+        self.max_y = max_y
+        self.max_x = max_x
+        self.our_player = our_player
+        self.known_extensions = known_extensions
+
+    def refresh(self):
+        global curdir_path
+        global offset_filelist
+        global selected_line
+        global coord_max_y
+        global current_list_dir
+
         logger.debug("refresh")
         # # Clear screen
-        stdscr.clear()
-        stdscr.border(0, 0, 0, 0, 0, 0, 0, 0)
+        self.stdscr.clear()
+        self.stdscr.border(0, 0, 0, 0, 0, 0, 0, 0)
 
-        coord_max_y = max_y - 5
+        coord_max_y = self.max_y - 5
 
-        stdscr.hline(max_y - 4, 1, curses.ACS_HLINE, max_x - 2)
+        self.stdscr.hline(self.max_y - 4, 1, curses.ACS_HLINE, self.max_x - 2)
 
         # print status for our_player
-        line_1, line_2 = our_player.get_interface_lines()
-        stdscr.addstr(max_y - 3, 1, line_1[:max_x - 3])
-        stdscr.addstr(max_y - 2, 1, line_2[:max_x - 3])
+        line_1, line_2 = self.our_player.get_interface_lines()
+        self.stdscr.addstr(self.max_y - 3, 1, line_1[:self.max_x - 3])
+        self.stdscr.addstr(self.max_y - 2, 1, line_2[:self.max_x - 3])
 
         # print current path
         arg_path_print = str(curdir_path)[max(
-            0, (len(str(curdir_path)) + 4) - max_x):]
+            0, (len(str(curdir_path)) + 4) - self.max_x):]
 
-        stdscr.addstr(0, int(max_x / 2) - int(((len(arg_path_print) + 2) / 2)),
-                      "|" + arg_path_print + "|")
+        self.stdscr.addstr(0, int(self.max_x / 2) - int(((len(arg_path_print) + 2) / 2)),
+                           "|" + arg_path_print + "|")
 
         current_list_dir = [s for s in os.listdir(str(curdir_path))
-                            if (s.endswith(known_extensions) or
+                            if (s.endswith(self.known_extensions) or
                                 os.path.isdir(str(curdir_path) + "/" + s))
                             and not s.startswith(".")]
 
@@ -91,24 +121,15 @@ def main(stdscr):
                 f = f + "/"
             # coloring selection
             if selected_line == 1 + line:
-                stdscr.addstr(1 + line, 1, f[:max_x - 2], curses.A_REVERSE)
+                self.stdscr.addstr(
+                    1 + line, 1, f[:self.max_x - 2], curses.A_REVERSE)
             else:
-                stdscr.addstr(1 + line, 1, f, 0)
+                self.stdscr.addstr(1 + line, 1, f, 0)
 
-        stdscr.refresh()
-
-        if not thread_started:
-            t1 = threading.Thread(target=get_input, args=(
-                our_player, stdscr))
-            t1.start()
-            # t1.join()
-            logger.debug("thread started")
-            thread_started = True
-
-        time.sleep(1)
+        self.stdscr.refresh()
 
 
-def get_input(our_player, stdscr):
+def get_input(our_player, stdscr, refresher):
 
     logger.debug("inside thread ")
     global curdir_path
@@ -150,6 +171,7 @@ def get_input(our_player, stdscr):
                 selected_line = 1
             else:
                 our_player.play(joined_path)
+        refresher.refresh()
     # return curdir_path, offset_filelist, selected_line
 
 
