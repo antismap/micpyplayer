@@ -50,7 +50,8 @@ class Player(object):
             #current_time = self.current_track.get_current_time()
 
         line_1 = " " + self.state + " " + print_file
-        line_2 = "current %: " + str(self.vlc_player.get_position())
+        line_2 = "current %: (entre 0 et 1)" + \
+            str(self.vlc_player.get_position())
         return line_1, line_2
 
     def __init__(self, logger):

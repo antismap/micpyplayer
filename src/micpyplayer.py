@@ -4,13 +4,29 @@ import curses
 import os
 import sys
 import logging
+import threading
+import time
 
 from pathlib import Path
 import player
 
+curdir_path = None
+offset_filelist = 0
+selected_line = 1
+coord_max_y = None
+current_list_dir = None
+
+logger = logging.getLogger("micpyplayer")
+logger.setLevel(logging.DEBUG)
+
 
 def main(stdscr):
 
+    global curdir_path
+    global offset_filelist
+    global selected_line
+    global coord_max_y
+    global current_list_dir
     known_extensions = '.mp3', '.wav', '.aac', '.aif', '.ogg', '.wma'
 
     arg_path = ""
@@ -19,10 +35,8 @@ def main(stdscr):
     else:
         arg_path = sys.argv[1]
 
-    selected_line = 1
     curdir_path = Path(arg_path)
-    logger = logging.getLogger("micpyplayer")
-    logger.setLevel(logging.DEBUG)
+
     ch = logging.FileHandler("output_log.txt")
     ch.setLevel(logging.DEBUG)
     # create formatter
@@ -39,9 +53,10 @@ def main(stdscr):
     screen.hline(2, 1, curses.ACS_HLINE, 77)
     screen.refresh()
     max_y, max_x = stdscr.getmaxyx()
-    offset_filelist = 0
     our_player = player.Player(logger)
+    thread_started = False
     while 1:
+        logger.debug("refresh")
         # # Clear screen
         stdscr.clear()
         stdscr.border(0, 0, 0, 0, 0, 0, 0, 0)
@@ -81,24 +96,49 @@ def main(stdscr):
                 stdscr.addstr(1 + line, 1, f, 0)
 
         stdscr.refresh()
-        got_key = stdscr.getch()
 
+        if not thread_started:
+            t1 = threading.Thread(target=get_input, args=(
+                our_player, stdscr))
+            t1.start()
+            # t1.join()
+            logger.debug("thread started")
+            thread_started = True
+
+        time.sleep(1)
+
+
+def get_input(our_player, stdscr):
+
+    logger.debug("inside thread ")
+    global curdir_path
+    global offset_filelist
+    global selected_line
+    global coord_max_y
+    global current_list_dir
+    logger.debug("curdir path " + str(curdir_path))
+
+    while True:
+        got_key = stdscr.getch()
         if got_key == curses.KEY_UP:
+            logger.debug("key up")
             if offset_filelist > 0 and selected_line == 1:
                 offset_filelist = offset_filelist - 1
             else:
                 selected_line = max(1, selected_line - 1)
 
         elif got_key == curses.KEY_DOWN:
+            logger.debug("key down")
             # if we are at the last entry and there still are entries
             if (coord_max_y + offset_filelist) < len(current_list_dir) \
-               and selected_line == coord_max_y:
+                    and selected_line == coord_max_y:
                 offset_filelist = offset_filelist + 1
             else:
                 selected_line = min(min(coord_max_y, len(
                     current_list_dir)), selected_line + 1)
             # selected_line = min(coord_max_y, selected_line + 1)
         elif got_key == curses.KEY_RIGHT:
+            logger.debug("key right")
             joined_path = curdir_path.joinpath(
                 Path(current_list_dir[selected_line + offset_filelist - 1]))
             if selected_line == 1:
@@ -110,6 +150,7 @@ def main(stdscr):
                 selected_line = 1
             else:
                 our_player.play(joined_path)
+    # return curdir_path, offset_filelist, selected_line
 
 
 curses.wrapper(main)
