@@ -57,12 +57,15 @@ class Player(object):
         if self.current_track:
             print_file = self.current_track.get_track_info_line()
             # current_time = self.current_track.get_current_time()
+            line_2 = StringPrinter.time_elapsed_time_left(
+                self.vlc_player.get_time(), self.vlc_player.get_length())
+            progress_bar_bars = int(
+                (((self.vlc_player.get_position() * 100.0) * (max_x - 2)) / 100))
+        else:
+            line_2 = ""
+            progress_bar_bars = 0
 
         line_1 = " " + self.state + " " + print_file
-        line_2 = StringPrinter.time_elapsed_time_left(
-            self.vlc_player.get_time(), self.vlc_player.get_length())
-        progress_bar_bars = int(
-            (((self.vlc_player.get_position() * 100.0) * (max_x - 2)) / 100))
 
         return line_1, line_2, progress_bar_bars
 

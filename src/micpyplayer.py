@@ -55,7 +55,7 @@ def main(stdscr):
     max_y, max_x = stdscr.getmaxyx()
     our_player = player.Player(logger)
     thread_started = False
-    refresher = ScreenRefresher(
+    refresher = ScreenPainter(
         stdscr, max_y, max_x, our_player, known_extensions)
 
     while 1:
@@ -71,7 +71,7 @@ def main(stdscr):
         time.sleep(0.5)
 
 
-class ScreenRefresher(object):
+class ScreenPainter(object):
     def __init__(self, stdscr, max_y, max_x, our_player, known_extensions):
         self.stdscr = stdscr
         self.max_y = max_y
@@ -96,15 +96,7 @@ class ScreenRefresher(object):
         self.stdscr.hline(self.max_y - 4, 1, curses.ACS_HLINE, self.max_x - 2)
 
         # print status for our_player
-        line_1, line_2, progress_bar_bars = self.our_player.get_interface_lines(
-            self.max_x)
-        self.stdscr.addstr(self.max_y - 3, 1, line_1[:self.max_x - 3])
-        line_2_and_bars = line_2[:progress_bar_bars] + \
-            ((progress_bar_bars-len(line_2))*" ")
-        self.stdscr.addstr(self.max_y - 2, 1, line_2[:self.max_x - 3])
-        if progress_bar_bars > 0:
-            self.stdscr.addstr(
-                self.max_y - 2, 1, line_2_and_bars[:self.max_x - 3], curses.A_REVERSE)
+        self.draw_status()
 
         # print current path
         arg_path_print = str(curdir_path)[max(
@@ -112,6 +104,16 @@ class ScreenRefresher(object):
 
         self.stdscr.addstr(0, int(self.max_x / 2) - int(((len(arg_path_print) + 2) / 2)),
                            "|" + arg_path_print + "|")
+
+        self.draw_file_list(coord_max_y)
+
+        self.stdscr.refresh()
+
+    def draw_file_list(self, coord_max_y):
+        global curdir_path
+        global offset_filelist
+        global selected_line
+        global current_list_dir
 
         current_list_dir = [s for s in os.listdir(str(curdir_path))
                             if (s.endswith(self.known_extensions) or
@@ -132,7 +134,17 @@ class ScreenRefresher(object):
             else:
                 self.stdscr.addstr(1 + line, 1, f, 0)
 
-        self.stdscr.refresh()
+    def draw_status(self):
+        # print status for our_player
+        line_1, line_2, progress_bar_bars = self.our_player.get_interface_lines(
+            self.max_x)
+        self.stdscr.addstr(self.max_y - 3, 1, line_1[:self.max_x - 3])
+        line_2_and_bars = line_2[:progress_bar_bars] + \
+            ((progress_bar_bars-len(line_2))*" ")
+        self.stdscr.addstr(self.max_y - 2, 1, line_2[:self.max_x - 3])
+        if progress_bar_bars > 0:
+            self.stdscr.addstr(
+                self.max_y - 2, 1, line_2_and_bars[:self.max_x - 3], curses.A_REVERSE)
 
 
 def get_input(our_player, stdscr, refresher):
