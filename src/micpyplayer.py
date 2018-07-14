@@ -68,7 +68,7 @@ def main(stdscr):
             logger.debug("thread started")
             thread_started = True
 
-        time.sleep(1)
+        time.sleep(0.5)
 
 
 class ScreenRefresher(object):
@@ -96,9 +96,15 @@ class ScreenRefresher(object):
         self.stdscr.hline(self.max_y - 4, 1, curses.ACS_HLINE, self.max_x - 2)
 
         # print status for our_player
-        line_1, line_2 = self.our_player.get_interface_lines()
+        line_1, line_2, progress_bar_bars = self.our_player.get_interface_lines(
+            self.max_x)
         self.stdscr.addstr(self.max_y - 3, 1, line_1[:self.max_x - 3])
+        line_2_and_bars = line_2[:progress_bar_bars] + \
+            ((progress_bar_bars-len(line_2))*" ")
         self.stdscr.addstr(self.max_y - 2, 1, line_2[:self.max_x - 3])
+        if progress_bar_bars > 0:
+            self.stdscr.addstr(
+                self.max_y - 2, 1, line_2_and_bars[:self.max_x - 3], curses.A_REVERSE)
 
         # print current path
         arg_path_print = str(curdir_path)[max(

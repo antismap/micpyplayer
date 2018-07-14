@@ -1,4 +1,5 @@
 import vlc
+import datetime
 
 
 class Track(object):
@@ -35,6 +36,14 @@ class Track(object):
 #    def get_current_time(self):
 
 
+class StringPrinter(object):
+    @staticmethod
+    def time_elapsed_time_left(elapsed_ms, left_ms):
+        date_elapsed = datetime.datetime.fromtimestamp(elapsed_ms/1000.0)
+        date_left = datetime.datetime.fromtimestamp(left_ms/1000.0)
+        return date_elapsed.strftime('%M:%S') + " / " + date_left.strftime('%M:%S')
+
+
 class Player(object):
     #  libvlc_media_player_get_position
     # vlm_get_media_instance_time(self, psz_name, i_instance):
@@ -42,17 +51,20 @@ class Player(object):
     def song_finished(self, event):
         self.logger.debug("song finished!")
 
-    def get_interface_lines(self):
+    def get_interface_lines(self, max_x):
         print_file = ""
-        #current_time = ""
+        # current_time = ""
         if self.current_track:
             print_file = self.current_track.get_track_info_line()
-            #current_time = self.current_track.get_current_time()
+            # current_time = self.current_track.get_current_time()
 
         line_1 = " " + self.state + " " + print_file
-        line_2 = "current %: (entre 0 et 1)" + \
-            str(self.vlc_player.get_position())
-        return line_1, line_2
+        line_2 = StringPrinter.time_elapsed_time_left(
+            self.vlc_player.get_time(), self.vlc_player.get_length())
+        progress_bar_bars = int(
+            (((self.vlc_player.get_position() * 100.0) * (max_x - 2)) / 100))
+
+        return line_1, line_2, progress_bar_bars
 
     def __init__(self, logger):
         self.instance = vlc.Instance()
