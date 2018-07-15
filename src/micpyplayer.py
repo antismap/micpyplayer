@@ -15,7 +15,7 @@ offset_filelist = 0
 selected_line = 1
 coord_max_y = None
 current_list_dir = None
-
+exit_requested = False
 logger = logging.getLogger("micpyplayer")
 logger.setLevel(logging.DEBUG)
 
@@ -27,6 +27,7 @@ def main(stdscr):
     global selected_line
     global coord_max_y
     global current_list_dir
+    global exit_requested
     known_extensions = '.mp3', '.wav', '.aac', '.aif', '.ogg', '.wma'
 
     arg_path = ""
@@ -58,7 +59,7 @@ def main(stdscr):
     refresher = ScreenPainter(
         stdscr, max_y, max_x, our_player, known_extensions)
 
-    while 1:
+    while not exit_requested:
         refresher.refresh()
 
         if not thread_started:
@@ -155,9 +156,10 @@ def get_input(our_player, stdscr, refresher):
     global selected_line
     global coord_max_y
     global current_list_dir
+    global exit_requested
     logger.debug("curdir path " + str(curdir_path))
 
-    while True:
+    while not exit_requested:
         got_key = stdscr.getch()
         if got_key == curses.KEY_UP:
             logger.debug("key up")
@@ -189,6 +191,9 @@ def get_input(our_player, stdscr, refresher):
                 selected_line = 1
             else:
                 our_player.play(joined_path)
+        elif got_key == ord('q'):
+            exit_requested = True
+            break
         refresher.refresh()
     # return curdir_path, offset_filelist, selected_line
 
