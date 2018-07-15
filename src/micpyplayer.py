@@ -79,13 +79,14 @@ def main(stdscr):
 class MainBox(object):
     def __init__(self, stdscr):
         self.update(stdscr)
+        self.menu_x_size = 20
 
     def update(self, stdscr):
         global show_menu
         if show_menu:
-            self.min_x = 10
+            self.min_x = self.menu_x_size
         else:
-            self.min_x = 0
+            self.min_x = 1
 
         self.max_y, self.max_x = stdscr.getmaxyx()
 
@@ -110,27 +111,39 @@ class ScreenPainter(object):
         # # Clear screen
         self.stdscr.clear()
         self.stdscr.border(0, 0, 0, 0, 0, 0, 0, 0)
-        self.stdscr.vline(main_box.max_y - 4, 1,
-                          curses.ACS_HLINE, main_box.max_x - 2)
+        self.stdscr.vline(self.main_box.max_y - 4, 1,
+                          curses.ACS_HLINE, self.main_box.max_x - 2)
 
-        coord_max_y = main_box.max_y - 5
+        coord_max_y = self.main_box.max_y - 5
 
-        self.stdscr.hline(main_box.max_y - 4, 1,
-                          curses.ACS_HLINE, main_box.max_x - 2)
+        self.stdscr.hline(self.main_box.max_y - 4, 1,
+                          curses.ACS_HLINE, self.main_box.max_x - 2)
 
         # print status for our_player
         self.draw_status()
 
+        self.draw_menu()
+
         # print current path
         arg_path_print = str(curdir_path)[max(
-            0, (len(str(curdir_path)) + 4) - main_box.max_x):]
+            0, (len(str(curdir_path)) + 4) - self.main_box.max_x):]
 
-        self.stdscr.addstr(0, int(main_box.max_x / 2) - int(((len(arg_path_print) + 2) / 2)),
+        self.stdscr.addstr(0, int(self.main_box.max_x / 2) - int(((len(arg_path_print) + 2) / 2)),
                            "|" + arg_path_print + "|")
 
         self.draw_file_list(coord_max_y)
 
         self.stdscr.refresh()
+
+    def draw_menu(self):
+        global show_menu
+        if show_menu:
+            self.stdscr.vline(1, self.main_box.menu_x_size-1,
+                              curses.ACS_VLINE, self.main_box.max_y - 5)
+            self.stdscr.addstr(1, 2, "Menu", curses.A_UNDERLINE)
+            self.stdscr.addstr(2, 2, "Browser")
+            self.stdscr.addstr(3, 2, "Settings")
+            self.stdscr.addstr(4, 2, "Themes")
 
     def draw_file_list(self, coord_max_y):
         global curdir_path
@@ -153,21 +166,23 @@ class ScreenPainter(object):
             # coloring selection
             if selected_line == 1 + line:
                 self.stdscr.addstr(
-                    1 + line, 1, f[:main_box.max_x - 2], curses.A_REVERSE)
+                    1 + line, self.main_box.min_x, f[:self.main_box.max_x - 2], curses.A_REVERSE)
             else:
-                self.stdscr.addstr(1 + line, 1, f, 0)
+                self.stdscr.addstr(1 + line, self.main_box.min_x, f, 0)
 
     def draw_status(self):
         # print status for our_player
         line_1, line_2, progress_bar_bars = self.our_player.get_interface_lines(
-            main_box.max_x)
-        self.stdscr.addstr(main_box.max_y - 3, 1, line_1[:main_box.max_x - 3])
+            self.main_box.max_x)
+        self.stdscr.addstr(self.main_box.max_y - 3, 1,
+                           line_1[:self.main_box.max_x - 3])
         line_2_and_bars = line_2[:progress_bar_bars] + \
             ((progress_bar_bars-len(line_2))*" ")
-        self.stdscr.addstr(main_box.max_y - 2, 1, line_2[:main_box.max_x - 3])
+        self.stdscr.addstr(self.main_box.max_y - 2, 1,
+                           line_2[:self.main_box.max_x - 3])
         if progress_bar_bars > 0:
             self.stdscr.addstr(
-                main_box.max_y - 2, 1, line_2_and_bars[:main_box.max_x - 3], curses.A_REVERSE)
+                self.main_box.max_y - 2, 1, line_2_and_bars[:self.main_box.max_x - 3], curses.A_REVERSE)
 
 
 def get_input(our_player, stdscr, refresher):
