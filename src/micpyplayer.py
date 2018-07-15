@@ -18,6 +18,8 @@ current_list_dir = None
 exit_requested = False
 logger = logging.getLogger("micpyplayer")
 logger.setLevel(logging.DEBUG)
+show_menu = False
+main_box = None
 
 
 def main(stdscr):
@@ -28,6 +30,7 @@ def main(stdscr):
     global coord_max_y
     global current_list_dir
     global exit_requested
+    global main_box
     known_extensions = '.mp3', '.wav', '.aac', '.aif', '.ogg', '.wma'
 
     arg_path = ""
@@ -53,11 +56,12 @@ def main(stdscr):
     screen.box()
     screen.hline(2, 1, curses.ACS_HLINE, 77)
     screen.refresh()
-    max_y, max_x = stdscr.getmaxyx()
+    main_box = MainBox(stdscr)
+   # max_y, max_x = stdscr.getmaxyx()
     our_player = player.Player(logger)
     thread_started = False
     refresher = ScreenPainter(
-        stdscr, max_y, max_x, our_player, known_extensions)
+        stdscr, main_box, our_player, known_extensions)
 
     while not exit_requested:
         refresher.refresh()
@@ -69,14 +73,28 @@ def main(stdscr):
             logger.debug("thread started")
             thread_started = True
 
-        time.sleep(0.5)
+        time.sleep(0.48)
+
+
+class MainBox(object):
+    def __init__(self, stdscr):
+        self.update(stdscr)
+
+    def update(self, stdscr):
+        global show_menu
+        if show_menu:
+            self.min_x = 10
+        else:
+            self.min_x = 0
+
+        self.max_y, self.max_x = stdscr.getmaxyx()
 
 
 class ScreenPainter(object):
-    def __init__(self, stdscr, max_y, max_x, our_player, known_extensions):
+
+    def __init__(self, stdscr, main_box, our_player, known_extensions):
         self.stdscr = stdscr
-        self.max_y = max_y
-        self.max_x = max_x
+        self.main_box = main_box
         self.our_player = our_player
         self.known_extensions = known_extensions
 
@@ -88,22 +106,26 @@ class ScreenPainter(object):
         global current_list_dir
 
         logger.debug("refresh")
+        self.main_box.update(self.stdscr)
         # # Clear screen
         self.stdscr.clear()
         self.stdscr.border(0, 0, 0, 0, 0, 0, 0, 0)
+        self.stdscr.vline(main_box.max_y - 4, 1,
+                          curses.ACS_HLINE, main_box.max_x - 2)
 
-        coord_max_y = self.max_y - 5
+        coord_max_y = main_box.max_y - 5
 
-        self.stdscr.hline(self.max_y - 4, 1, curses.ACS_HLINE, self.max_x - 2)
+        self.stdscr.hline(main_box.max_y - 4, 1,
+                          curses.ACS_HLINE, main_box.max_x - 2)
 
         # print status for our_player
         self.draw_status()
 
         # print current path
         arg_path_print = str(curdir_path)[max(
-            0, (len(str(curdir_path)) + 4) - self.max_x):]
+            0, (len(str(curdir_path)) + 4) - main_box.max_x):]
 
-        self.stdscr.addstr(0, int(self.max_x / 2) - int(((len(arg_path_print) + 2) / 2)),
+        self.stdscr.addstr(0, int(main_box.max_x / 2) - int(((len(arg_path_print) + 2) / 2)),
                            "|" + arg_path_print + "|")
 
         self.draw_file_list(coord_max_y)
@@ -131,21 +153,21 @@ class ScreenPainter(object):
             # coloring selection
             if selected_line == 1 + line:
                 self.stdscr.addstr(
-                    1 + line, 1, f[:self.max_x - 2], curses.A_REVERSE)
+                    1 + line, 1, f[:main_box.max_x - 2], curses.A_REVERSE)
             else:
                 self.stdscr.addstr(1 + line, 1, f, 0)
 
     def draw_status(self):
         # print status for our_player
         line_1, line_2, progress_bar_bars = self.our_player.get_interface_lines(
-            self.max_x)
-        self.stdscr.addstr(self.max_y - 3, 1, line_1[:self.max_x - 3])
+            main_box.max_x)
+        self.stdscr.addstr(main_box.max_y - 3, 1, line_1[:main_box.max_x - 3])
         line_2_and_bars = line_2[:progress_bar_bars] + \
             ((progress_bar_bars-len(line_2))*" ")
-        self.stdscr.addstr(self.max_y - 2, 1, line_2[:self.max_x - 3])
+        self.stdscr.addstr(main_box.max_y - 2, 1, line_2[:main_box.max_x - 3])
         if progress_bar_bars > 0:
             self.stdscr.addstr(
-                self.max_y - 2, 1, line_2_and_bars[:self.max_x - 3], curses.A_REVERSE)
+                main_box.max_y - 2, 1, line_2_and_bars[:main_box.max_x - 3], curses.A_REVERSE)
 
 
 def get_input(our_player, stdscr, refresher):
@@ -157,7 +179,7 @@ def get_input(our_player, stdscr, refresher):
     global coord_max_y
     global current_list_dir
     global exit_requested
-    logger.debug("curdir path " + str(curdir_path))
+    global show_menu
 
     while not exit_requested:
         got_key = stdscr.getch()
@@ -194,6 +216,8 @@ def get_input(our_player, stdscr, refresher):
         elif got_key == ord('q'):
             exit_requested = True
             break
+        elif got_key == ord('m'):
+            show_menu = not show_menu
         refresher.refresh()
     # return curdir_path, offset_filelist, selected_line
 
