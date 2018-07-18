@@ -13,7 +13,7 @@ Under Fedora, do
 
 ### Ubuntu
 
-Unter Ubuntu:
+Under Ubuntu:
 
     sudo apt-get install libvlc-dev vlc
 
