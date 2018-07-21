@@ -1,40 +1,7 @@
 import vlc
 import datetime
 import play_queue
-
-
-class Track(object):
-
-    def __init__(self, logger, instance, mediapath):
-        self.path = mediapath
-        self.fullpath = str(mediapath.resolve())
-        self.instance = instance
-        self.logger = logger
-        self.logger.debug("self.fullpath: %s", self.fullpath)
-
-        self.media = self.instance.media_new(self.fullpath)
-        self.has_id3 = self.parse_new_track(self.media)
-
-    def parse_new_track(self, media):
-        media.parse()
-        self.artist = media.get_meta(vlc.Meta.Artist)
-        self.album = media.get_meta(vlc.Meta.Album) or "Unknown Album"
-        self.title = media.get_meta(vlc.Meta.Title)
-        # Display a little symbol instead of the track number if it's unknown
-        self.track_nb = media.get_meta(vlc.Meta.TrackNumber) or "*"
-
-        # Display track info if we have at least an artist and a title,
-        # else display the file name
-        return self.artist and self.title
-
-    def get_track_info_line(self):
-        if self.has_id3:
-            return "{s.track_nb} - {s.artist} - {s.title} ({s.album})"\
-                   .format(s=self)
-        else:
-            return self.fullpath
-
-#    def get_current_time(self):
+import track
 
 
 class StringPrinter(object):
@@ -45,7 +12,7 @@ class StringPrinter(object):
         return date_elapsed.strftime('%M:%S') + " / " + date_left.strftime('%M:%S')
 
 
-class Player(object):
+class TrackPlayer(object):
     #  libvlc_media_player_get_position
     # vlm_get_media_instance_time(self, psz_name, i_instance):
 
@@ -96,7 +63,8 @@ class Player(object):
         else:
             self.logger.debug("PlayerClass:  playing new track")
             self.state = ">"
-            self.current_track = Track(self.logger, self.instance, fullpath)
+            self.current_track = track.Track(
+                self.logger, self.instance, fullpath)
 
             self.vlc_player.set_media(self.current_track.media)
             self.vlc_player.play()

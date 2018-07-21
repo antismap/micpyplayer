@@ -8,7 +8,7 @@ import threading
 import time
 
 from pathlib import Path
-import player
+import track_player
 import play_queue
 
 curdir_path = None
@@ -59,7 +59,7 @@ def main(stdscr):
     screen.refresh()
     main_box = MainBox(stdscr)
    # max_y, max_x = stdscr.getmaxyx()
-    our_player = player.Player(logger)
+    our_player = track_player.TrackPlayer(logger)
     thread_started = False
     refresher = ScreenPainter(
         stdscr, main_box, our_player, known_extensions)

@@ -1,0 +1,10 @@
+venv/
+.idea/
+*#*#*
+*.pyc
+*.txt
+.pytest_cache/
+src/.vscode/
+.vscode/
+.project
+.pydevproject
