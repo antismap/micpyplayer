@@ -9,12 +9,13 @@ import time
 
 from pathlib import Path
 import player
+import play_queue
 
 curdir_path = None
 offset_filelist = 0
 selected_line = 1
 coord_max_y = None
-current_list_dir = None
+file_list_in_current_dir = None
 exit_requested = False
 logger = logging.getLogger("micpyplayer")
 logger.setLevel(logging.DEBUG)
@@ -28,10 +29,10 @@ def main(stdscr):
     global offset_filelist
     global selected_line
     global coord_max_y
-    global current_list_dir
+    global file_list_in_current_dir
     global exit_requested
     global main_box
-    known_extensions = '.mp3', '.wav', '.aac', '.aif', '.ogg', '.wma'
+    known_extensions = '.mp3', '.wav', '.aac', '.aif', '.ogg', '.wma', '.flac', '.m4a', '.Mp3', '.MP3'
 
     arg_path = ""
     if len(sys.argv) < 2:
@@ -104,7 +105,7 @@ class ScreenPainter(object):
         global offset_filelist
         global selected_line
         global coord_max_y
-        global current_list_dir
+        global file_list_in_current_dir
 
         logger.debug("refresh")
         self.main_box.update(self.stdscr)
@@ -149,17 +150,17 @@ class ScreenPainter(object):
         global curdir_path
         global offset_filelist
         global selected_line
-        global current_list_dir
+        global file_list_in_current_dir
 
-        current_list_dir = [s for s in os.listdir(str(curdir_path))
-                            if (s.endswith(self.known_extensions) or
-                                os.path.isdir(str(curdir_path) + "/" + s))
-                            and not s.startswith(".")]
+        file_list_in_current_dir = [s for s in os.listdir(str(curdir_path))
+                                    if (s.endswith(self.known_extensions) or
+                                        os.path.isdir(str(curdir_path) + "/" + s))
+                                    and not s.startswith(".")]
 
-        current_list_dir.insert(0, "..")
+        file_list_in_current_dir.insert(0, "..")
 
-        for line, f in enumerate(current_list_dir[offset_filelist:coord_max_y
-                                                  + offset_filelist]):
+        for line, f in enumerate(file_list_in_current_dir[offset_filelist:coord_max_y
+                                                          + offset_filelist]):
 
             if curdir_path.joinpath(Path(f)).is_dir() and line > 0:
                 f = f + "/"
@@ -192,7 +193,7 @@ def get_input(our_player, stdscr, refresher):
     global offset_filelist
     global selected_line
     global coord_max_y
-    global current_list_dir
+    global file_list_in_current_dir
     global exit_requested
     global show_menu
 
@@ -208,17 +209,18 @@ def get_input(our_player, stdscr, refresher):
         elif got_key == curses.KEY_DOWN:
             logger.debug("key down")
             # if we are at the last entry and there still are entries
-            if (coord_max_y + offset_filelist) < len(current_list_dir) \
+            if (coord_max_y + offset_filelist) < len(file_list_in_current_dir) \
                     and selected_line == coord_max_y:
                 offset_filelist = offset_filelist + 1
             else:
                 selected_line = min(min(coord_max_y, len(
-                    current_list_dir)), selected_line + 1)
+                    file_list_in_current_dir)), selected_line + 1)
             # selected_line = min(coord_max_y, selected_line + 1)
         elif got_key == curses.KEY_RIGHT:
             logger.debug("key right")
+            current_offset_in_file_list = selected_line + offset_filelist - 1
             joined_path = curdir_path.joinpath(
-                Path(current_list_dir[selected_line + offset_filelist - 1]))
+                Path(file_list_in_current_dir[current_offset_in_file_list]))
             if selected_line == 1:
                 offset_filelist = 0
                 curdir_path = curdir_path.parent
@@ -227,7 +229,9 @@ def get_input(our_player, stdscr, refresher):
                 curdir_path = joined_path
                 selected_line = 1
             else:
-                our_player.play(joined_path)
+                current_queue = play_queue.PlayQueue(
+                    curdir_path, file_list_in_current_dir, current_offset_in_file_list)
+                our_player.play(current_queue)
         elif got_key == ord('q'):
             exit_requested = True
             break

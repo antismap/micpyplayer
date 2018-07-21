@@ -1,5 +1,6 @@
 import vlc
 import datetime
+import play_queue
 
 
 class Track(object):
@@ -80,8 +81,8 @@ class Player(object):
         self.state = "||"
         self.current_track = None
 
-    def play(self, file_path):
-        fullpath = file_path.resolve()
+    def play(self, our_play_queue):
+        fullpath = our_play_queue.pop_song().resolve()
         if self.current_track is not None and \
            self.current_track.fullpath == str(fullpath):
             if self.state == ">":
