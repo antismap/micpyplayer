@@ -231,7 +231,7 @@ def get_input(our_player, stdscr, refresher):
             else:
                 current_queue = play_queue.PlayQueue(
                     curdir_path, file_list_in_current_dir, current_offset_in_file_list)
-                our_player.play(current_queue)
+                our_player.play_new_queue(current_queue)
         elif got_key == ord('q'):
             exit_requested = True
             break

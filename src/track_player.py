@@ -17,7 +17,9 @@ class TrackPlayer(object):
     # vlm_get_media_instance_time(self, psz_name, i_instance):
 
     def song_finished(self, event):
-        self.logger.debug("song finished!")
+        self.logger.debug("got SongFinished event")
+        current_track_fullpath = self.current_queue.pop_song().resolve()
+        self.__play_track(current_track_fullpath)
 
     def get_interface_lines(self, max_x):
         print_file = ""
@@ -48,10 +50,9 @@ class TrackPlayer(object):
         self.state = "||"
         self.current_track = None
 
-    def play(self, our_play_queue):
-        fullpath = our_play_queue.pop_song().resolve()
+    def __play_track(self, song_full_path):
         if self.current_track is not None and \
-           self.current_track.fullpath == str(fullpath):
+           self.current_track.fullpath == str(song_full_path):
             if self.state == ">":
                 self.logger.debug("PlayerClass:  set to pause")
                 self.state = "||"
@@ -64,7 +65,12 @@ class TrackPlayer(object):
             self.logger.debug("PlayerClass:  playing new track")
             self.state = ">"
             self.current_track = track.Track(
-                self.logger, self.instance, fullpath)
+                self.logger, self.instance, song_full_path)
 
             self.vlc_player.set_media(self.current_track.media)
             self.vlc_player.play()
+
+    def play_new_queue(self, our_play_queue):
+        self.current_queue = our_play_queue
+        current_track_fullpath = our_play_queue.pop_song().resolve()
+        self.__play_track(current_track_fullpath)
