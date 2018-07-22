@@ -46,7 +46,7 @@ def main(stdscr):
     ch.setLevel(logging.DEBUG)
     # create formatter
     formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        '%(asctime)s -%(relativeCreated)6d- %(threadName)s - %(levelname)s - %(message)s')
     # add formatter to ch
     ch.setFormatter(formatter)
     logger.addHandler(ch)
@@ -107,7 +107,7 @@ class ScreenPainter(object):
         global coord_max_y
         global file_list_in_current_dir
 
-        logger.debug("refresh")
+        # logger.debug("refresh")
         self.main_box.update(self.stdscr)
         # # Clear screen
         self.stdscr.clear()

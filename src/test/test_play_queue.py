@@ -13,4 +13,4 @@ def test_play_queue():
     assert our_queue.pop_song() == Path('test/fakemp3/fakesong1.mp3')
     assert our_queue.pop_song() == Path("test/fakemp3/fakesong2.mp3")
     assert our_queue.pop_song() == Path("test/fakemp3/fakesong3.mp3")
-    assert our_queue.pop_song() == Path("")
+    assert our_queue.pop_song() == None

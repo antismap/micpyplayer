@@ -15,11 +15,22 @@ class StringPrinter(object):
 class TrackPlayer(object):
     #  libvlc_media_player_get_position
     # vlm_get_media_instance_time(self, psz_name, i_instance):
+    def init_vlc_player(self):
+        self.vlc_player = self.instance.media_player_new()
+        self.events = self.vlc_player.event_manager()
+        self.events.event_attach(
+            vlc.EventType.MediaPlayerEndReached, self.song_finished)
 
     def song_finished(self, event):
         self.logger.debug("got SongFinished event")
-        current_track_fullpath = self.current_queue.pop_song().resolve()
-        self.__play_track(current_track_fullpath)
+        popped_song = self.current_queue.pop_song()
+        if popped_song is not None:
+            current_track_fullpath = popped_song.resolve()
+            self.logger.debug("resolved path " + str(current_track_fullpath))
+            self.init_vlc_player()
+            self.__play_track(current_track_fullpath)
+        else:
+            self.__play_pause()
 
     def get_interface_lines(self, max_x):
         print_file = ""
@@ -41,34 +52,36 @@ class TrackPlayer(object):
 
     def __init__(self, logger):
         self.instance = vlc.Instance()
-        self.vlc_player = self.instance.media_player_new()
-        self.events = self.vlc_player.event_manager()
-        self.events.event_attach(
-            vlc.EventType.MediaPlayerEndReached, self.song_finished)
+        self.init_vlc_player()
         self.logger = logger
         self.logger.debug("PlayerClass instanced")
         self.state = "||"
         self.current_track = None
 
+    def __play_pause(self):
+        if self.state == ">":
+            self.logger.debug("PlayerClass:  set to pause")
+            self.state = "||"
+            self.vlc_player.pause()
+        else:
+            self.logger.debug("PlayerClass:  set to play")
+            self.state = ">"
+            self.vlc_player.play()
+
     def __play_track(self, song_full_path):
         if self.current_track is not None and \
            self.current_track.fullpath == str(song_full_path):
-            if self.state == ">":
-                self.logger.debug("PlayerClass:  set to pause")
-                self.state = "||"
-                self.vlc_player.pause()
-            else:
-                self.logger.debug("PlayerClass:  set to play")
-                self.state = ">"
-                self.vlc_player.play()
+            self.__play_pause()
         else:
             self.logger.debug("PlayerClass:  playing new track")
             self.state = ">"
             self.current_track = track.Track(
                 self.logger, self.instance, song_full_path)
-
+            self.logger.debug("current track set")
             self.vlc_player.set_media(self.current_track.media)
+            self.logger.debug("media set")
             self.vlc_player.play()
+            self.logger.debug("after play")
 
     def play_new_queue(self, our_play_queue):
         self.current_queue = our_play_queue

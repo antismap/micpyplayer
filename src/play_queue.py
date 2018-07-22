@@ -12,5 +12,5 @@ class PlayQueue(object):
         if len(self.song_list) > 0:
             result = self.song_list.pop(0)
         else:
-            result = Path("")
+            result = None
         return result
