@@ -125,16 +125,18 @@ class ScreenPainter(object):
 
         self.draw_menu()
 
-        # print current path
+        self.draw_path_on_top()
+
+        self.draw_file_list(coord_max_y)
+
+        self.stdscr.refresh()
+
+    def draw_path_on_top(self):
         arg_path_print = str(curdir_path)[max(
             0, (len(str(curdir_path)) + 4) - self.main_box.max_x):]
 
         self.stdscr.addstr(0, int(self.main_box.max_x / 2) - int(((len(arg_path_print) + 2) / 2)),
                            "|" + arg_path_print + "|")
-
-        self.draw_file_list(coord_max_y)
-
-        self.stdscr.refresh()
 
     def draw_menu(self):
         global show_menu
