@@ -1,0 +1,11 @@
+{
+  "os": "linux",
+  "dist": "precise",
+  "group": "stable",
+  "python": "3.6",
+  "script": "pytest",
+  "install": "pip install -e .",
+  "language": "python"
+}
+
+
