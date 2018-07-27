@@ -2,7 +2,7 @@
   "os": "linux",
   "group": "stable",
   "python": "3.6",
-  "script": "pytest",
+  "script": "cd src && pytest",
   "language": "python"
 }
 
