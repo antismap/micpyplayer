@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/antismap/micpyplayer.svg?branch=master)](https://travis-ci.org/antismap/micpyplayer)
+
 # micpyplayer
 Simple music player in python with ncurses and libvlc. This project is still in early stages.
 
