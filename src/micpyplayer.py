@@ -227,9 +227,12 @@ def get_input(our_player, stdscr, refresher):
                 offset_filelist = 0
                 curdir_path = curdir_path.parent
             elif joined_path.is_dir():
-                offset_filelist = 0
-                curdir_path = joined_path
-                selected_line = 1
+                if os.access(joined_path, os.R_OK):
+                    offset_filelist = 0
+                    curdir_path = joined_path
+                    selected_line = 1
+                else:
+                    logger.debug("no read permissions on joined_path, TODO notify user")
             else:
                 current_queue = play_queue.PlayQueue(
                     curdir_path, file_list_in_current_dir, current_offset_in_file_list)
@@ -239,6 +242,10 @@ def get_input(our_player, stdscr, refresher):
             break
         elif got_key == ord('m'):
             show_menu = not show_menu
+        elif got_key == ord('+'):
+            logger.debug("volume +")
+        elif got_key == ord('-'):
+            logger.debug("volume -")
         refresher.refresh()
     # return curdir_path, offset_filelist, selected_line
 
