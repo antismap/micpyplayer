@@ -2,7 +2,11 @@ import vlc
 import datetime
 import play_queue
 import track
+from enum import Enum
 
+class PlayerState(Enum):
+    PLAYING = ">"
+    PAUSED = "||"
 
 class StringPrinter(object):
     @staticmethod
@@ -19,7 +23,7 @@ class TrackPlayer(object):
         self.init_vlc_player()
         self.logger = logger
         self.logger.debug("PlayerClass instanced")
-        self.state = "||"
+        self.state = PlayerState.PAUSED
         self.current_track = None
 
     #  libvlc_media_player_get_position
@@ -55,18 +59,18 @@ class TrackPlayer(object):
             line_2 = ""
             progress_bar_bars = 0
 
-        line_1 = " " + self.state + " " + print_file
+        line_1 = " " + self.state.value + " " + print_file
 
         return line_1, line_2, progress_bar_bars
 
     def __play_pause(self):
-        if self.state == ">":
+        if self.state == PlayerState.PLAYING:
             self.logger.debug("PlayerClass:  set to pause")
-            self.state = "||"
+            self.state = PlayerState.PAUSED
             self.vlc_player.pause()
         else:
             self.logger.debug("PlayerClass:  set to play")
-            self.state = ">"
+            self.state = PlayerState.PLAYING
             self.vlc_player.play()
 
     def __play_track(self, song_full_path):
@@ -75,7 +79,7 @@ class TrackPlayer(object):
             self.__play_pause()
         else:
             self.logger.debug("PlayerClass:  playing new track")
-            self.state = ">"
+            self.state = PlayerState.PLAYING
             self.current_track = track.Track(
                 self.logger, self.instance, song_full_path)
             self.logger.debug("current track set")
