@@ -58,7 +58,7 @@ def main(stdscr):
     screen.hline(2, 1, curses.ACS_HLINE, 77)
     screen.refresh()
     main_box = MainBox(stdscr)
-   # max_y, max_x = stdscr.getmaxyx()
+    # max_y, max_x = stdscr.getmaxyx()
     our_player = track_player.TrackPlayer(logger)
     thread_started = False
     refresher = ScreenPainter(
@@ -81,6 +81,9 @@ class MainBox(object):
     def __init__(self, stdscr):
         self.update(stdscr)
         self.menu_x_size = 20
+        self.min_x = None
+        self.max_y = None
+        self.max_x = None
 
     def update(self, stdscr):
         global show_menu
@@ -202,41 +205,11 @@ def get_input(our_player, stdscr, refresher):
     while not exit_requested:
         got_key = stdscr.getch()
         if got_key == curses.KEY_UP:
-            logger.debug("key up")
-            if offset_filelist > 0 and selected_line == 1:
-                offset_filelist = offset_filelist - 1
-            else:
-                selected_line = max(1, selected_line - 1)
-
+            process_up()
         elif got_key == curses.KEY_DOWN:
-            logger.debug("key down")
-            # if we are at the last entry and there still are entries
-            if (coord_max_y + offset_filelist) < len(file_list_in_current_dir) \
-                    and selected_line == coord_max_y:
-                offset_filelist = offset_filelist + 1
-            else:
-                selected_line = min(min(coord_max_y, len(
-                    file_list_in_current_dir)), selected_line + 1)
-            # selected_line = min(coord_max_y, selected_line + 1)
+            process_down(coord_max_y, file_list_in_current_dir)
         elif got_key == curses.KEY_RIGHT:
-            logger.debug("key right")
-            current_offset_in_file_list = selected_line + offset_filelist - 1
-            joined_path = curdir_path.joinpath(
-                Path(file_list_in_current_dir[current_offset_in_file_list]))
-            if selected_line == 1:
-                offset_filelist = 0
-                curdir_path = curdir_path.parent
-            elif joined_path.is_dir():
-                if os.access(joined_path, os.R_OK):
-                    offset_filelist = 0
-                    curdir_path = joined_path
-                    selected_line = 1
-                else:
-                    logger.debug("no read permissions on joined_path, TODO notify user")
-            else:
-                current_queue = play_queue.PlayQueue(
-                    curdir_path, file_list_in_current_dir, current_offset_in_file_list)
-                our_player.play_new_queue(current_queue)
+            process_right(file_list_in_current_dir, our_player)
         elif got_key == ord('q'):
             exit_requested = True
             break
@@ -248,6 +221,50 @@ def get_input(our_player, stdscr, refresher):
             logger.debug("volume -")
         refresher.refresh()
     # return curdir_path, offset_filelist, selected_line
+
+
+def process_up():
+    global offset_filelist, selected_line
+    logger.debug("key up")
+    if offset_filelist > 0 and selected_line == 1:
+        offset_filelist = offset_filelist - 1
+    else:
+        selected_line = max(1, selected_line - 1)
+
+
+def process_right(file_list_in_current_dir, our_player):
+    global offset_filelist, curdir_path, selected_line
+    logger.debug("key right")
+    current_offset_in_file_list = selected_line + offset_filelist - 1
+    joined_path = curdir_path.joinpath(
+        Path(file_list_in_current_dir[current_offset_in_file_list]))
+    if selected_line == 1:
+        offset_filelist = 0
+        curdir_path = curdir_path.parent
+    elif joined_path.is_dir():
+        if os.access(joined_path, os.R_OK):
+            offset_filelist = 0
+            curdir_path = joined_path
+            selected_line = 1
+        else:
+            logger.debug("no read permissions on joined_path, TODO notify user")
+    else:
+        current_queue = play_queue.PlayQueue(
+            curdir_path, file_list_in_current_dir, current_offset_in_file_list)
+        our_player.play_new_queue(current_queue)
+
+
+def process_down(coord_max_y, file_list_in_current_dir):
+    global offset_filelist, selected_line
+    logger.debug("key down")
+    # if we are at the last entry and there still are entries
+    if (coord_max_y + offset_filelist) < len(file_list_in_current_dir) \
+            and selected_line == coord_max_y:
+        offset_filelist = offset_filelist + 1
+    else:
+        selected_line = min(min(coord_max_y, len(
+            file_list_in_current_dir)), selected_line + 1)
+    # selected_line = min(coord_max_y, selected_line + 1)
 
 
 curses.wrapper(main)

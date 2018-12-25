@@ -13,6 +13,11 @@ class Track(object):
         self.media = self.instance.media_new(self.fullpath)
         self.has_id3 = self.parse_new_track(self.media)
 
+        self.artist = None
+        self.album = None
+        self.title = None
+        self.track_nb = None
+
     def parse_new_track(self, media):
         media.parse()
         self.artist = media.get_meta(vlc.Meta.Artist)

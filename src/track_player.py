@@ -13,6 +13,15 @@ class StringPrinter(object):
 
 
 class TrackPlayer(object):
+
+    def __init__(self, logger):
+        self.instance = vlc.Instance()
+        self.init_vlc_player()
+        self.logger = logger
+        self.logger.debug("PlayerClass instanced")
+        self.state = "||"
+        self.current_track = None
+
     #  libvlc_media_player_get_position
     # vlm_get_media_instance_time(self, psz_name, i_instance):
     def init_vlc_player(self):
@@ -49,14 +58,6 @@ class TrackPlayer(object):
         line_1 = " " + self.state + " " + print_file
 
         return line_1, line_2, progress_bar_bars
-
-    def __init__(self, logger):
-        self.instance = vlc.Instance()
-        self.init_vlc_player()
-        self.logger = logger
-        self.logger.debug("PlayerClass instanced")
-        self.state = "||"
-        self.current_track = None
 
     def __play_pause(self):
         if self.state == ">":
