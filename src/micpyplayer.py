@@ -50,6 +50,7 @@ def main(stdscr):
     refresher = ScreenPainter(stdscr, main_box, our_player, known_extensions, current_app_state )
 
     while not current_app_state[0].exit_requested:
+        logger.debug("cyclic refresh")
         refresher.refresh()
 
         if not thread_started:
@@ -173,6 +174,7 @@ class ScreenPainter(object):
             ((progress_bar_bars-len(line_2))*" ")
         self.stdscr.addstr(self.main_box.max_y - 2, 1,
                            line_2[:self.main_box.max_x - 3])
+        logger.debug("progress bars " + str(progress_bar_bars))
         if progress_bar_bars > 0:
             self.stdscr.addstr(
                 self.main_box.max_y - 2, 1, line_2_and_bars[:self.main_box.max_x - 3], curses.A_REVERSE)
@@ -185,10 +187,9 @@ class InputClass(threading.Thread):
         self.stdscr = stdscr
         self.refresher = refresher
         self.current_app_state = current_app_state
-        self.get_input()
         threading.Thread.__init__(self)
 
-    def get_input(self):
+    def run(self):
         logger.debug("inside thread ")
 
         while not self.current_app_state[0].exit_requested:
@@ -209,7 +210,6 @@ class InputClass(threading.Thread):
             elif got_key == ord('-'):
                 logger.debug("volume -")
             self.refresher.refresh()
-        # return curdir_path, offset_filelist, selected_line
 
     def process_up(self):
         logger.debug("key up")
@@ -247,7 +247,6 @@ class InputClass(threading.Thread):
         else:
             self.current_app_state[0].selected_line = min(min(coord_max_y, len(
                 file_list_in_current_dir)), self.current_app_state[0].selected_line + 1)
-        # selected_line = min(coord_max_y, selected_line + 1)
 
 
 curses.wrapper(main)
