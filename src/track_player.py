@@ -61,7 +61,7 @@ class TrackPlayer(object):
             self.init_vlc_player()
             self.__play_track(current_track_fullpath)
         else:
-            self.__play_pause()
+            self.play_pause()
 
     def get_interface_lines(self, max_x):
         print_file = ""
@@ -81,7 +81,7 @@ class TrackPlayer(object):
 
         return line_1, line_2, progress_bar_bars
 
-    def __play_pause(self):
+    def play_pause(self):
         if self.state == PlayerState.PLAYING:
             self.logger.debug("PlayerClass:  set to pause")
             self.state = PlayerState.PAUSED
@@ -94,7 +94,7 @@ class TrackPlayer(object):
     def __play_track(self, song_full_path):
         if self.current_track is not None and \
                 self.current_track.fullpath == str(song_full_path):
-            self.__play_pause()
+            self.play_pause()
         else:
             self.logger.debug("PlayerClass:  playing new track")
             self.state = PlayerState.PLAYING

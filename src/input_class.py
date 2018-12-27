@@ -40,6 +40,9 @@ class InputClass(threading.Thread):
                 self.current_app_state[0].volume_counter = 2
                 self.current_app_state[0].volume = self.our_player.volume_down()
                 self.logger.debug("volume -")
+            elif got_key == ord(' '):
+                self.our_player.play_pause()
+
             self.refresher.refresh()
 
     def process_up(self):
