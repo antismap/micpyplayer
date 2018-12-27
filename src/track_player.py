@@ -4,15 +4,17 @@ import play_queue
 import track
 from enum import Enum
 
+
 class PlayerState(Enum):
     PLAYING = ">"
     PAUSED = "||"
 
+
 class StringPrinter(object):
     @staticmethod
     def time_elapsed_time_left(elapsed_ms, left_ms):
-        date_elapsed = datetime.datetime.fromtimestamp(elapsed_ms/1000.0)
-        date_left = datetime.datetime.fromtimestamp(left_ms/1000.0)
+        date_elapsed = datetime.datetime.fromtimestamp(elapsed_ms / 1000.0)
+        date_left = datetime.datetime.fromtimestamp(left_ms / 1000.0)
         return date_elapsed.strftime('%M:%S') + " / " + date_left.strftime('%M:%S')
 
 
@@ -91,7 +93,7 @@ class TrackPlayer(object):
 
     def __play_track(self, song_full_path):
         if self.current_track is not None and \
-           self.current_track.fullpath == str(song_full_path):
+                self.current_track.fullpath == str(song_full_path):
             self.__play_pause()
         else:
             self.logger.debug("PlayerClass:  playing new track")

@@ -20,7 +20,7 @@ class ScreenPainter(object):
         self.stdscr_protected[0].clear()
         self.stdscr_protected[0].border(0, 0, 0, 0, 0, 0, 0, 0)
         self.stdscr_protected[0].vline(self.main_box.max_y - 4, 1,
-                          curses.ACS_HLINE, self.main_box.max_x - 2)
+                                       curses.ACS_HLINE, self.main_box.max_x - 2)
 
         self.current_app_state[0].coord_max_y = self.main_box.max_y - 5
 
@@ -56,7 +56,7 @@ class ScreenPainter(object):
             0, (len(str(self.current_app_state[0].curdir_path)) + 4) - self.main_box.max_x):]
 
         self.stdscr_protected[0].addstr(0, int(self.main_box.max_x / 2) - int(((len(arg_path_print) + 2) / 2)),
-                           "|" + arg_path_print + "|")
+                                        "|" + arg_path_print + "|")
 
     def draw_menu(self):
         if self.current_app_state[0].show_menu:
@@ -79,10 +79,8 @@ class ScreenPainter(object):
         self.current_app_state[0].file_list_in_current_dir.insert(0, "..")
 
         for line, f in enumerate(
-                self.current_app_state[0].file_list_in_current_dir[self.current_app_state[0].offset_filelist:coord_max_y
-                                                                                                             +
-                                                                                                             self.current_app_state[
-                                                                                                                 0].offset_filelist]):
+                self.current_app_state[0].file_list_in_current_dir[
+                self.current_app_state[0].offset_filelist:coord_max_y + self.current_app_state[0].offset_filelist]):
 
             if self.current_app_state[0].curdir_path.joinpath(Path(f)).is_dir() and line > 0:
                 f = f + "/"
@@ -98,11 +96,11 @@ class ScreenPainter(object):
         line_1, line_2, progress_bar_bars = self.our_player.get_interface_lines(
             self.main_box.max_x)
         self.stdscr_protected[0].addstr(self.main_box.max_y - 3, 1,
-                           line_1[:self.main_box.max_x - 3])
+                                        line_1[:self.main_box.max_x - 3])
         line_2_and_bars = line_2[:progress_bar_bars] + \
                           ((progress_bar_bars - len(line_2)) * " ")
         self.stdscr_protected[0].addstr(self.main_box.max_y - 2, 1,
-                           line_2[:self.main_box.max_x - 3])
+                                        line_2[:self.main_box.max_x - 3])
         self.logger.debug("progress bars " + str(progress_bar_bars))
         if progress_bar_bars > 0:
             self.stdscr_protected[0].addstr(
