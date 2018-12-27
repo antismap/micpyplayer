@@ -13,9 +13,11 @@ from input_class import InputClass
 from screen_painter import ScreenPainter
 
 
-main_box = None
-
 def main(stdscr):
+    stdscr_protected = []
+    stdscr_protected.append(stdscr)
+    stdscr_protected.append(threading.Lock())
+
     logger = logging.getLogger("micpyplayer")
     logger.setLevel(logging.DEBUG)
 
@@ -46,18 +48,18 @@ def main(stdscr):
     screen.box()
     screen.hline(2, 1, curses.ACS_HLINE, 77)
     screen.refresh()
-    main_box = MainBox(stdscr, current_app_state)
-    # max_y, max_x = stdscr.getmaxyx()
+    main_box = MainBox(stdscr_protected, current_app_state)
     our_player = track_player.TrackPlayer(logger)
+    current_app_state[0].volume = our_player.get_volume()
     thread_started = False
-    refresher = ScreenPainter(stdscr, main_box, our_player, known_extensions, current_app_state, logger)
+    refresher = ScreenPainter(stdscr_protected, main_box, our_player, known_extensions, current_app_state, logger)
 
     while not current_app_state[0].exit_requested:
         logger.debug("cyclic refresh")
         refresher.refresh()
 
         if not thread_started:
-            t1 = InputClass(our_player, stdscr, refresher, current_app_state, logger)
+            t1 = InputClass(our_player, stdscr_protected, refresher, current_app_state, logger)
             t1.start()
             logger.debug("thread started")
             thread_started = True
@@ -74,25 +76,28 @@ class AppState(object):
         self.file_list_in_current_dir = None
         self.exit_requested = False
         self.show_menu = False
-
+        self.volume = None
+        self.volume_counter = 0
 
 
 class MainBox(object):
-    def __init__(self, stdscr, current_application_state):
+    def __init__(self, stdscr_protected, current_application_state):
         self.current_application_state = current_application_state
-        self.update(stdscr)
+        self.stdscr_protected = stdscr_protected
+        self.update()
         self.menu_x_size = 20
         self.min_x = None
         self.max_y = None
         self.max_x = None
 
-    def update(self, stdscr):
+    def update(self):
         if self.current_application_state[0].show_menu:
             self.min_x = self.menu_x_size
         else:
             self.min_x = 1
-
-        self.max_y, self.max_x = stdscr.getmaxyx()
+        self.stdscr_protected[1].acquire()
+        self.max_y, self.max_x = self.stdscr_protected[0].getmaxyx()
+        self.stdscr_protected[1].release()
 
 
 curses.wrapper(main)

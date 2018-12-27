@@ -26,6 +26,22 @@ class TrackPlayer(object):
         self.state = PlayerState.PAUSED
         self.current_track = None
 
+    def get_volume(self):
+        return self.vlc_player.audio_get_volume()
+
+    def volume_up(self):
+        self.logger.debug("volume up")
+        self.vlc_player.audio_set_volume(min(100, self.vlc_player.audio_get_volume() + 10))
+        volume = self.vlc_player.audio_get_volume()
+        self.logger.debug("current volume " + str(volume))
+        return volume
+
+    def volume_down(self):
+        self.vlc_player.audio_set_volume(max(0, self.vlc_player.audio_get_volume() - 10))
+        volume = self.vlc_player.audio_get_volume()
+        self.logger.debug("current volume " + str(volume))
+        return volume
+
     #  libvlc_media_player_get_position
     # vlm_get_media_instance_time(self, psz_name, i_instance):
     def init_vlc_player(self):

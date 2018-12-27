@@ -7,10 +7,10 @@ import play_queue
 
 
 class InputClass(threading.Thread):
-    def __init__(self, our_player, stdscr, refresher, current_app_state, logger):
+    def __init__(self, our_player, stdscr_protected, refresher, current_app_state, logger):
         self.logger = logger
         self.our_player = our_player
-        self.stdscr = stdscr
+        self.stdscr_protected = stdscr_protected
         self.refresher = refresher
         self.current_app_state = current_app_state
         threading.Thread.__init__(self)
@@ -19,7 +19,7 @@ class InputClass(threading.Thread):
         self.logger.debug("inside thread ")
 
         while not self.current_app_state[0].exit_requested:
-            got_key = self.stdscr.getch()
+            got_key = self.stdscr_protected[0].getch()
             if got_key == curses.KEY_UP:
                 self.process_up()
             elif got_key == curses.KEY_DOWN:
@@ -33,9 +33,13 @@ class InputClass(threading.Thread):
             elif got_key == ord('m'):
                 self.current_app_state[0].show_menu = not self.current_app_state[0].show_menu
             elif got_key == ord('+'):
-                logger.debug("volume +")
+                self.current_app_state[0].volume_counter = 2
+                self.logger.debug("volume +")
+                self.current_app_state[0].volume = self.our_player.volume_up()
             elif got_key == ord('-'):
-                logger.debug("volume -")
+                self.current_app_state[0].volume_counter = 2
+                self.current_app_state[0].volume = self.our_player.volume_down()
+                self.logger.debug("volume -")
             self.refresher.refresh()
 
     def process_up(self):
