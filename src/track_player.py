@@ -32,17 +32,20 @@ class TrackPlayer(object):
         return self.vlc_player.audio_get_volume()
 
     def volume_up(self):
-        self.logger.debug("volume up")
-        self.vlc_player.audio_set_volume(min(100, self.vlc_player.audio_get_volume() + 10))
+        self.logger.debug("------------ current volume before set " + str(self.vlc_player.audio_get_volume()))
+        new_volume = min(100, self.vlc_player.audio_get_volume() + 10)
+        self.logger.debug("------------ volume up, setting to " + str(new_volume))
+        self.vlc_player.audio_set_volume(new_volume)
         volume = self.vlc_player.audio_get_volume()
-        self.logger.debug("current volume " + str(volume))
-        return volume
+        self.logger.debug("------------ volume set to " + str(volume))
+        return new_volume
 
     def volume_down(self):
-        self.vlc_player.audio_set_volume(max(0, self.vlc_player.audio_get_volume() - 10))
+        new_volume = max(0, self.vlc_player.audio_get_volume() - 10)
+        self.vlc_player.audio_set_volume(new_volume)
         volume = self.vlc_player.audio_get_volume()
         self.logger.debug("current volume " + str(volume))
-        return volume
+        return new_volume
 
     #  libvlc_media_player_get_position
     # vlm_get_media_instance_time(self, psz_name, i_instance):

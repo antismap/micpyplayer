@@ -55,7 +55,6 @@ def main(stdscr):
     refresher = ScreenPainter(stdscr_protected, main_box, our_player, known_extensions, current_app_state, logger)
 
     while not current_app_state[0].exit_requested:
-        logger.debug("cyclic refresh")
         refresher.refresh()
 
         if not thread_started:

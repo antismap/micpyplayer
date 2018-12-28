@@ -47,8 +47,12 @@ class ScreenPainter(object):
             new_window.border(0, 0, 0, 0, 0, 0, 0, 0)
             new_window.addstr(0, int((self.main_box.max_x - 2 - 4) / 2) - int(((len(volume_text) + 2) / 2)),
                               "|" + volume_text + "|")
-            self.stdscr_protected[0].addstr(int(self.main_box.max_y / 2) + 1, 5,
-                                            int(volume * (new_win_width - 2) / (100)) * " ", curses.A_REVERSE)
+            nb_of_bars = int(volume * (new_win_width - 2) / (100))
+            nb_of_bars_white = (new_win_width - 2 - int(volume * (new_win_width - 2) / (100)))
+            bars = nb_of_bars * " "
+            bars_draw_y = int(self.main_box.max_y / 2) + 1
+            self.stdscr_protected[0].addstr(bars_draw_y, 5, bars, curses.A_REVERSE)
+            self.stdscr_protected[0].addstr(bars_draw_y, 5 + len(bars), nb_of_bars_white * " ", curses.A_CHARTEXT)
             self.current_app_state[0].volume_counter = max(0, self.current_app_state[0].volume_counter - 1)
 
     def draw_path_on_top(self):
