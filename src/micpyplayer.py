@@ -52,13 +52,15 @@ def main(stdscr):
     our_player = track_player.TrackPlayer(logger)
     current_app_state[0].volume = our_player.get_volume()
     thread_started = False
-    refresher = ScreenPainter(stdscr_protected, main_box, our_player, known_extensions, current_app_state, logger)
+    refresher = ScreenPainter(stdscr_protected, main_box,
+                              our_player, known_extensions, current_app_state, logger)
 
     while not current_app_state[0].exit_requested:
         refresher.refresh()
 
         if not thread_started:
-            t1 = InputClass(our_player, stdscr_protected, refresher, current_app_state, logger)
+            t1 = InputClass(our_player, stdscr_protected,
+                            refresher, current_app_state, logger)
             t1.start()
             logger.debug("thread started")
             thread_started = True
@@ -67,6 +69,7 @@ def main(stdscr):
 
 
 class AppState(object):
+
     def __init__(self, curdir_path, offset_filelist, selected_line):
         self.curdir_path = curdir_path
         self.offset_filelist = offset_filelist
@@ -80,6 +83,7 @@ class AppState(object):
 
 
 class MainBox(object):
+
     def __init__(self, stdscr_protected, current_application_state):
         self.current_application_state = current_application_state
         self.stdscr_protected = stdscr_protected

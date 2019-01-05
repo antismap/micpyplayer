@@ -4,11 +4,11 @@ import vlc
 class Track(object):
 
     def __init__(self, logger, instance, mediapath):
-
         self.artist = None
         self.album = None
         self.title = None
         self.track_nb = None
+        self.art_url = None
 
         self.path = mediapath
         self.fullpath = str(mediapath.resolve())
@@ -24,6 +24,7 @@ class Track(object):
         self.artist = media.get_meta(vlc.Meta.Artist)
         self.album = media.get_meta(vlc.Meta.Album) or "Unknown Album"
         self.title = media.get_meta(vlc.Meta.Title)
+        self.art_url = media.get_meta(vlc.Meta.ArtworkURL)
         # Display a little symbol instead of the track number if it's unknown
         self.track_nb = media.get_meta(vlc.Meta.TrackNumber) or "*"
         self.logger.debug(
@@ -39,4 +40,5 @@ class Track(object):
         else:
             return self.fullpath
 
-#    def get_current_time(self):
+    def get_album_art_url(self):
+        return self.art_url

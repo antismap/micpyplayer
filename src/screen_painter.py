@@ -22,9 +22,9 @@ class ScreenPainter(object):
         self.stdscr_protected[0].vline(self.main_box.max_y - 4, 1,
                                        curses.ACS_HLINE, self.main_box.max_x - 2)
 
-        self.current_app_state[0].coord_max_y = self.main_box.max_y - 5
+        self.current_app_state[0].coord_max_y = self.main_box.max_y - 4
 
-        self.stdscr_protected[0].hline(self.main_box.max_y - 4, 1,
+        self.stdscr_protected[0].hline(self.main_box.max_y - 3, 1,
                                        curses.ACS_HLINE, self.main_box.max_x - 2)
 
         # print status for our_player
@@ -32,28 +32,35 @@ class ScreenPainter(object):
         self.draw_menu()
         self.draw_path_on_top()
         self.draw_file_list(self.current_app_state[0].coord_max_y)
+        # self.draw_current_track()
         self.draw_volume()
 
         self.stdscr_protected[0].refresh()
         self.stdscr_protected[1].release()
 
     def draw_volume(self):
-        self.logger.debug("volume counter " + str(self.current_app_state[0].volume_counter))
+        self.logger.debug("volume counter " +
+                          str(self.current_app_state[0].volume_counter))
         if self.current_app_state[0].volume_counter > 0:
             volume = self.current_app_state[0].volume
             new_win_width = self.main_box.max_x - 8
-            new_window = self.stdscr_protected[0].subwin(3, new_win_width, int(self.main_box.max_y / 2), 4)
+            new_window = self.stdscr_protected[0].subwin(
+                3, new_win_width, int(self.main_box.max_y / 2), 4)
             volume_text = "volume: " + str(volume) + "%"
             new_window.border(0, 0, 0, 0, 0, 0, 0, 0)
             new_window.addstr(0, int((self.main_box.max_x - 2 - 4) / 2) - int(((len(volume_text) + 2) / 2)),
                               "|" + volume_text + "|")
             nb_of_bars = int(volume * (new_win_width - 2) / (100))
-            nb_of_bars_white = (new_win_width - 2 - int(volume * (new_win_width - 2) / (100)))
+            nb_of_bars_white = (new_win_width - 2 -
+                                int(volume * (new_win_width - 2) / (100)))
             bars = nb_of_bars * " "
             bars_draw_y = int(self.main_box.max_y / 2) + 1
-            self.stdscr_protected[0].addstr(bars_draw_y, 5, bars, curses.A_REVERSE)
-            self.stdscr_protected[0].addstr(bars_draw_y, 5 + len(bars), nb_of_bars_white * " ", curses.A_CHARTEXT)
-            self.current_app_state[0].volume_counter = max(0, self.current_app_state[0].volume_counter - 1)
+            self.stdscr_protected[0].addstr(
+                bars_draw_y, 5, bars, curses.A_REVERSE)
+            self.stdscr_protected[0].addstr(
+                bars_draw_y, 5 + len(bars), nb_of_bars_white * " ", curses.A_CHARTEXT)
+            self.current_app_state[0].volume_counter = max(
+                0, self.current_app_state[0].volume_counter - 1)
 
     def draw_path_on_top(self):
         arg_path_print = str(self.current_app_state[0].curdir_path)[max(
@@ -74,7 +81,8 @@ class ScreenPainter(object):
     def draw_file_list(self, coord_max_y):
 
         self.current_app_state[0].file_list_in_current_dir = [s for s in
-                                                              os.listdir(str(self.current_app_state[0].curdir_path))
+                                                              os.listdir(
+                                                                  str(self.current_app_state[0].curdir_path))
                                                               if (s.endswith(self.known_extensions) or
                                                                   os.path.isdir(str(
                                                                       self.current_app_state[0].curdir_path) + "/" + s))
@@ -93,19 +101,32 @@ class ScreenPainter(object):
                 self.stdscr_protected[0].addstr(
                     1 + line, self.main_box.min_x, " " + f[:self.main_box.max_x - 2], curses.A_REVERSE)
             else:
-                self.stdscr_protected[0].addstr(1 + line, self.main_box.min_x, " " + f, 0)
+                self.stdscr_protected[0].addstr(
+                    1 + line, self.main_box.min_x, " " + f, 0)
 
     def draw_status(self):
         # print status for our_player
         line_1, line_2, progress_bar_bars = self.our_player.get_interface_lines(
             self.main_box.max_x)
-        self.stdscr_protected[0].addstr(self.main_box.max_y - 3, 1,
-                                        line_1[:self.main_box.max_x - 3])
+
+        self.stdscr_protected[0].addstr(
+            self.main_box.max_y - 1, 1, (self.main_box.max_x - 2) * " ")
+
+        self.stdscr_protected[0].addstr(
+            self.main_box.max_y - 2, 1, line_1[:self.main_box.max_x - 3])
         line_2_and_bars = line_2[:progress_bar_bars] + \
-                          ((progress_bar_bars - len(line_2)) * " ")
-        self.stdscr_protected[0].addstr(self.main_box.max_y - 2, 1,
+            ((progress_bar_bars - len(line_2)) * " ")
+        self.stdscr_protected[0].addstr(self.main_box.max_y - 1, 1,
                                         line_2[:self.main_box.max_x - 3])
         self.logger.debug("progress bars " + str(progress_bar_bars))
         if progress_bar_bars > 0:
             self.stdscr_protected[0].addstr(
-                self.main_box.max_y - 2, 1, line_2_and_bars[:self.main_box.max_x - 3], curses.A_REVERSE)
+                self.main_box.max_y - 1, 1, line_2_and_bars[:self.main_box.max_x - 3], curses.A_REVERSE)
+
+    def draw_current_track(self):
+        self.logger.debug("max x " + str(self.main_box.max_x))
+        height = 15
+        width = 32
+        new_window = self.stdscr_protected[0].subwin(height, width, int(
+            self.main_box.max_y - height) - 3, int(self.main_box.max_x - width))
+        new_window.border(0, 0, 0, 0, 0, 0, 0, 0)
